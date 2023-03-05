@@ -1,0 +1,6 @@
+{
+  "name": "com.d4ku.geometry-nodes",
+  "version": "0.1.0",
+  "displayName": "Geometry Nodes",
+  "description": "Build complex objects through Visual Scripting nodes"
+}
