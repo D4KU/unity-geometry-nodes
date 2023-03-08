@@ -22,20 +22,24 @@ namespace GeometryNodes
             Dictionary<string, HashSet<GeometryNodeInput>> bools = new();
 
             // Fill dictionary
-            foreach (GeometryNodeInput input in targets)
+            foreach (GeometryNodeInput target in targets)
             {
-                foreach (IUnit unit in input.GetComponent<ScriptMachine>().graph.units)
+                ScriptMachine script = target.Script;
+                if (script.graph == null)
+                    continue;
+
+                foreach (IUnit unit in script.graph.units)
                 {
                     switch (unit)
                     {
                         case FloatInput i:
-                            Add(floats, i.Key, input);
+                            Add(floats, i.Key, target);
                             break;
                         case IntInput i:
-                            Add(ints, i.Key, input);
+                            Add(ints, i.Key, target);
                             break;
                         case BoolInput i:
-                            Add(bools, i.Key, input);
+                            Add(bools, i.Key, target);
                             break;
                         default:
                             continue;
@@ -49,49 +53,43 @@ namespace GeometryNodes
         }
 
         private void Add(
-            Dictionary<string, HashSet<GeometryNodeInput>> target,
+            Dictionary<string, HashSet<GeometryNodeInput>> dict,
             string key,
             GeometryNodeInput input)
         {
             if (string.IsNullOrWhiteSpace(key))
                 return;
 
-            if (!target.TryGetValue(key, out var list))
+            if (!dict.TryGetValue(key, out var value))
             {
-                list = new();
-                target.Add(key, list);
+                value = new();
+                dict.Add(key, value);
             }
-            list.Add(input);
+            value.Add(input);
         }
 
         private void Render<T>(
             Dictionary<string, HashSet<GeometryNodeInput>> dict,
             Func<GUIContent, T, GUILayoutOption[], T> field,
-            Func<GeometryNodeInput, Dictionary<string, T>> getter)
+            Func<GeometryNodeInput, List<GeometryNodeInput.Pair<T>>> getter)
         {
-            foreach (var (key, set) in dict)
+            foreach (var (key, targets) in dict)
             {
-                getter(set.First()).TryGetValue(key, out T oldValue);
-
-                EditorGUILayout.BeginHorizontal();
+                T oldValue = getter(targets.First()).Find(x => x.key == key).value;
                 T newValue = field(new GUIContent(key), oldValue, new GUILayoutOption[0]);
-                bool clicked = GUILayout.Button(nameof(GeometryNodeInput.Reset), GUILayout.Width(80));
-                EditorGUILayout.EndHorizontal();
-
-                if (clicked)
-                {
-                    foreach (var target in set)
-                        target.Reset<T>(key);
-                    continue;
-                }
-
                 if (newValue.Equals(oldValue))
                     continue;
 
-                foreach (var target in set)
+                foreach (GeometryNodeInput target in targets)
                 {
-                    target.Trigger(key, newValue);
-                    getter(target)[key] = newValue;
+                    target.SetValue(key, newValue);
+                    var inputs = getter(target);
+                    inputs.SetValue(key, newValue);
+
+                    HashSet<string> oldKeys = new(inputs.Select(x => x.key));
+                    oldKeys.ExceptWith(dict.Keys);
+                    inputs.RemoveAll(x => oldKeys.Contains(x.key));
+                    EditorUtility.SetDirty(target);
                 }
             }
         }

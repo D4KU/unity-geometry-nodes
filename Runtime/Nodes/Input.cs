@@ -4,7 +4,7 @@ namespace GeometryNodes
 {
     [TypeIcon(typeof(GraphInput))]
     [UnitCategory("Events")]
-    public abstract class GeometryInput<T> : EventUnit<(string, T)>
+    public abstract class Input<T> : EventUnit<(string, T)>
     {
         [Serialize, Inspectable, UnitHeaderInspectable]
         public string Key { get; set; }
@@ -18,7 +18,8 @@ namespace GeometryNodes
             => new(HOOK_NAME, reference.gameObject);
 
         public const string HOOK_NAME = "GeometryNodeInput";
-        public static string GetResetCommand(string key) => "RESET" + key;
+        public static string GetClearCommand(string key) => "RESET" + key;
+        public static string GetInitCommand(string key) => "INIT" + key;
 
         protected override void Definition()
         {
@@ -34,16 +35,21 @@ namespace GeometryNodes
 
         protected override bool ShouldTrigger(Flow flow, (string, T) args)
         {
-            if (args.Item1 == GetResetCommand(Key))
+            if (args.Item1 == GetClearCommand(Key))
             {
-                trigger.RecursiveClear();
+                trigger.ClearDownstream();
+                return false;
+            }
+            if (args.Item1 == GetInitCommand(Key))
+            {
+                outputValue = args.Item2;
                 return false;
             }
             return Key == args.Item1;
         }
     }
 
-    public class FloatInput : GeometryInput<float> {}
-    public class IntInput : GeometryInput<int> {}
-    public class BoolInput : GeometryInput<bool> {}
+    public class FloatInput : Input<float> {}
+    public class IntInput : Input<int> {}
+    public class BoolInput : Input<bool> {}
 }

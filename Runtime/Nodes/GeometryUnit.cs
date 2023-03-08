@@ -36,8 +36,10 @@ namespace GeometryNodes
 
         protected void OnPortDisconnected(IUnitConnection connection, IUnitInputPort destination)
         {
-            if (connection.destination == destination)
-                Clear();
+            if (connection.destination != destination)
+                return;
+            output.ClearDownstream();
+            Clear();
         }
 
         private ControlOutput WrapExecute(Flow flow)

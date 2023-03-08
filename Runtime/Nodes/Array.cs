@@ -58,7 +58,7 @@ namespace GeometryNodes
         {
             foreach (List<Transform> list in instancesOut)
                 foreach (Transform transform in list.Skip(1))
-                transform.SaveDestroy();
+                    transform.SaveDestroy();
             instancesOut.Clear();
         }
 

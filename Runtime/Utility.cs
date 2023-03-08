@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace GeometryNodes
 {
-    internal static class Utility
+    public static class Utility
     {
-        public static void RecursiveClear(this IUnitOutputPort output)
+        public static void ClearDownstream(this IUnitPort output)
         {
             List<GeometryUnit> toClear = new();
-            Stack<IUnitOutputPort> ports = new();
+            Stack<IUnitPort> ports = new();
             ports.Push(output);
 
             while (ports.Count > 0)
@@ -17,8 +17,8 @@ namespace GeometryNodes
                 foreach (IUnitConnection connection in ports.Pop().connections)
                 {
                     IUnit successor = connection.destination.unit;
-                    if (successor is GeometryUnit geoUnit)
-                        toClear.Add(geoUnit);
+                    if (successor is GeometryUnit gUnit)
+                        toClear.Add(gUnit);
                     foreach (IUnitOutputPort port in successor.outputs)
                         ports.Push(port);
                 }
@@ -26,6 +26,25 @@ namespace GeometryNodes
 
             for (int i = toClear.Count - 1; i >= 0; i--)
                 toClear[i].Clear();
+        }
+
+        public static void SetValue<T>(
+            this List<GeometryNodeInput.Pair<T>> list,
+            string key,
+            T value)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                var pair = list[i];
+                if (pair.key == key)
+                {
+                    pair.value = value;
+                    list[i] = pair;
+                    return;
+                }
+            }
+
+            list.Add(new() { key = key, value = value });
         }
 
         public static T Duplicate<T>(
