@@ -50,6 +50,10 @@ namespace GeometryNodes
             Render(floats, EditorGUILayout.FloatField, x => x.floats);
             Render(ints  , EditorGUILayout.IntField  , x => x.ints);
             Render(bools , EditorGUILayout.Toggle    , x => x.bools);
+
+            if (GUILayout.Button(nameof(GeometryNodeInput.Clear)))
+                foreach (GeometryNodeInput target in targets)
+                    target.Clear();
         }
 
         private void Add(

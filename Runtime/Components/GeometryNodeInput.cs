@@ -51,7 +51,7 @@ namespace GeometryNodes
         }
 
         [ContextMenu(nameof(Clear))]
-        private void Clear()
+        public void Clear()
         {
             initialized = false;
 
