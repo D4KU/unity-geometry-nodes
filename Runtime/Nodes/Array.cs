@@ -37,7 +37,12 @@ namespace GeometryNodes
         }
 
         private List<Transform> GetOutputValue(Flow flow)
-            => instancesOut[flow.GetValue<int>(index)];
+        {
+            int vindex = flow.GetValue<int>(index);
+            if (vindex >= 0 && vindex < instancesOut.Count)
+                return instancesOut[vindex];
+            return new();
+        }
 
         public override void AfterAdd()
         {

@@ -12,7 +12,7 @@ namespace GeometryNodes
         protected ValueInput z;
 
         protected Transform targetValue;
-        protected Vector3? originalValue;
+        protected Vector3? originalVector;
 
         protected override void Definition()
         {
@@ -45,21 +45,22 @@ namespace GeometryNodes
 
         public override void Clear()
         {
-            if (targetValue && originalValue.HasValue)
-                SetVector(originalValue.Value);
+            if (targetValue && originalVector.HasValue)
+                SetVector(originalVector.Value);
         }
 
         protected override void Execute(Flow flow)
         {
-            targetValue = flow.GetValue<Transform>(target);
-            originalValue ??= Vector;
-            Vector3 vvector = flow.GetValue<Vector3>(vector);
+            targetValue = flow.GetValue<Transform>(this.target);
+            Vector3 source = Vector;
+            Vector3 target = flow.GetValue<Vector3>(vector);
+            originalVector ??= source;
 
-            if (!flow.GetValue<bool>(x)) vvector.x = originalValue.Value.x;
-            if (!flow.GetValue<bool>(y)) vvector.y = originalValue.Value.y;
-            if (!flow.GetValue<bool>(z)) vvector.z = originalValue.Value.z;
+            if (!flow.GetValue<bool>(x)) target.x = source.x;
+            if (!flow.GetValue<bool>(y)) target.y = source.y;
+            if (!flow.GetValue<bool>(z)) target.z = source.z;
 
-            SetVector(Convert(vvector));
+            SetVector(Convert(target));
         }
 
         protected abstract ValueInput VectorInput { get; }
