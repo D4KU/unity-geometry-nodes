@@ -67,8 +67,11 @@ namespace GeometryNodes
             {
                 UnityEditor.AssemblyReloadEvents.beforeAssemblyReload -= Clear;
                 var script = Script;
-                Invoke(script, "OnDisable");
-                Invoke(script, "OnDestroy");
+                if (script.graphData != null)
+                {
+                    Invoke(script, "OnDisable");
+                    Invoke(script, "OnDestroy");
+                }
             }
 #endif
         }

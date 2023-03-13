@@ -12,8 +12,10 @@ namespace GeometryNodes
         private ValueInput x;
         private ValueInput y;
         private ValueInput z;
+        private ValueOutput parent;
         private ValueOutput copy;
 
+        private Transform parentOut;
         private Transform copyOut;
 
         protected override void Definition()
@@ -25,10 +27,11 @@ namespace GeometryNodes
             x = ValueInput(nameof(x), true);
             y = ValueInput(nameof(y), true);
             z = ValueInput(nameof(z), true);
+            parent = ValueOutput(nameof(parent), _ => parentOut);
             copy = ValueOutput(nameof(copy), _ => copyOut);
 
             Requirement(original, input);
-            Assignment(input, copy);
+            Assignment(input, parent);
         }
 
         public override void AfterAdd()
@@ -46,20 +49,33 @@ namespace GeometryNodes
         private void OnOriginalDisconnected(IUnitConnection connection)
             => OnPortDisconnected(connection, original);
 
-        public override void Clear() => copyOut.SaveDestroy();
+        public override void Clear()
+        {
+            if (parentOut == null)
+                return;
+
+            foreach (Transform child in parentOut)
+                if (child != copyOut)
+                    child.parent = parentOut.parent;
+
+            parentOut.SafeDestroy();
+        }
 
         protected override void Execute(Flow flow)
         {
             Transform voriginal = flow.GetValue<Transform>(original);
             Vector3 vpivot = flow.GetValue<Vector3>(pivot);
             Vector3 m = new(flow.GetValue<bool>(x) ? -1 : 1,
-                    flow.GetValue<bool>(y) ? -1 : 1,
-                    flow.GetValue<bool>(z) ? -1 : 1);
+                            flow.GetValue<bool>(y) ? -1 : 1,
+                            flow.GetValue<bool>(z) ? -1 : 1);
 
-            if (copyOut == null)
-                copyOut = voriginal.Duplicate(parent: voriginal.parent);
+            voriginal.EnsureParent(ref parentOut, nameof(Mirror));
+            voriginal.parent = parentOut;
 
+            copyOut.SafeDestroy();
+            copyOut = voriginal.Duplicate(parentOut);
             copyOut.localPosition = Vector3.Scale(voriginal.localPosition - vpivot, m) + vpivot;
+            copyOut.localRotation = voriginal.localRotation;
             copyOut.localScale = Vector3.Scale(voriginal.localScale, m);
         }
     }

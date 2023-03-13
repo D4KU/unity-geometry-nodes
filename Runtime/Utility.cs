@@ -47,22 +47,22 @@ namespace GeometryNodes
             list.Add(new() { key = key, value = value });
         }
 
-        public static T Duplicate<T>(
-                this T original,
-                Vector3 position = default,
-                Quaternion rotation = default,
-                Transform parent = null)
+        public static T Duplicate<T>(this T original, Transform parent = null)
             where T : Component
             {
-                T copy = Object.Instantiate(
-                        original,
-                        position,
-                        rotation == default ? Quaternion.identity : rotation,
-                        parent);
+                T copy = Object.Instantiate(original, parent);
                 copy.AddComponent<CopyMark>();
                 copy.gameObject.hideFlags = HideFlags.DontSave;
                 return copy;
             }
+
+        public static void EnsureParent(this Transform child, ref Transform parent, string name)
+        {
+            if (parent == null)
+                parent = new GameObject($"{child.name} {name}").transform;
+            parent.parent = child.parent;
+            parent.localPosition = child.localPosition;
+        }
 
         /// <summary>
         /// Transform a <paramref name="point"/> from the local space of
@@ -74,13 +74,13 @@ namespace GeometryNodes
             return target ? target.InverseTransformPoint(v) : v;
         }
 
-        public static void SaveDestroy(this Transform t)
+        public static void SafeDestroy(this Transform t)
         {
             if (t)
-                t.gameObject.SaveDestroy();
+                t.gameObject.SafeDestroy();
         }
 
-        public static void SaveDestroy(this Object o)
+        public static void SafeDestroy(this Object o)
         {
 #if UNITY_EDITOR
             if (!Application.isPlaying)
