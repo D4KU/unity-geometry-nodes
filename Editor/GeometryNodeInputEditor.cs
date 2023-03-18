@@ -33,13 +33,13 @@ namespace GeometryNodes
                     switch (unit)
                     {
                         case FloatInput i:
-                            Add(floats, i.Key, target);
+                            Add(floats, i.key, target);
                             break;
                         case IntInput i:
-                            Add(ints, i.Key, target);
+                            Add(ints, i.key, target);
                             break;
                         case BoolInput i:
-                            Add(bools, i.Key, target);
+                            Add(bools, i.key, target);
                             break;
                         default:
                             continue;

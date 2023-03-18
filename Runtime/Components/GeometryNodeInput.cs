@@ -25,27 +25,23 @@ namespace GeometryNodes
 
         private void OnDestroy() => Clear();
 
-        private void Initialize()
+        private void Initialize(ScriptMachine script)
         {
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
                 UnityEditor.AssemblyReloadEvents.beforeAssemblyReload += Clear;
-                var script = Script;
-                if (script.graphData == null)
-                {
-                    Invoke(script, "Awake");
-                    Invoke(script, "OnEnable");
-                    Invoke(script, "Start");
-                }
+                Invoke(script, "Awake");
+                Invoke(script, "OnEnable");
+                Invoke(script, "Start");
             }
 #endif
             foreach (var pair in floats)
-                Initialize(pair.key, pair.value);
+                SetValue(pair.key, pair.value, script);
             foreach (var pair in ints)
-                Initialize(pair.key, pair.value);
+                SetValue(pair.key, pair.value, script);
             foreach (var pair in bools)
-                Initialize(pair.key, pair.value);
+                SetValue(pair.key, pair.value, script);
 
             initialized = true;
         }
@@ -54,43 +50,46 @@ namespace GeometryNodes
         public void Clear()
         {
             initialized = false;
+            ScriptMachine script = Script;
 
-            foreach (var pair in floats)
-                Clear<float>(pair.key);
-            foreach (var pair in ints)
-                Clear<int>(pair.key);
-            foreach (var pair in bools)
-                Clear<bool>(pair.key);
+            if (script.graph != null)
+                foreach (IUnit unit in script.graph.units)
+                    if (unit is Entry entry)
+                        entry.trigger.ClearDownstream();
 
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
                 UnityEditor.AssemblyReloadEvents.beforeAssemblyReload -= Clear;
-                var script = Script;
-                if (script.graphData != null)
-                {
-                    Invoke(script, "OnDisable");
-                    Invoke(script, "OnDestroy");
-                }
+                Invoke(script, "OnDisable");
+                Invoke(script, "OnDestroy");
             }
 #endif
         }
 
-        public void SetValue<T>(string eventKey, T value)
+        public void SetValue<T>(string key, T value)
         {
-            if (!initialized)
-                Initialize();
-            Trigger(eventKey, value);
+            ScriptMachine script = Script;
+            if (script.graph == null)
+            {
+                initialized = false;
+                return;
+            }
+
+            if (initialized)
+                SetValue<T>(key, value, script);
+            else
+                Initialize(script);
+
+            EventBus.Trigger(Entry.HOOK_NAME, gameObject);
         }
 
-        private void Initialize<T>(string eventKey, T value)
-            => Trigger(Input<T>.GetInitCommand(eventKey), value);
-
-        private void Clear<T>(string eventKey)
-            => Trigger(Input<T>.GetClearCommand(eventKey), default(T));
-
-        private void Trigger<T>(string eventKey, T value)
-            => EventBus.Trigger(Input<T>.HOOK_NAME, gameObject, (eventKey, value));
+        private void SetValue<T>(string key, T value, ScriptMachine script)
+        {
+            foreach (IUnit unit in script.graph.units)
+                if (unit is Input<T> i && i.key == key)
+                    i.value = value;
+        }
 
         private static void Invoke<T>(T obj, string methodName) => typeof(T)
             .GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance)
