@@ -18,6 +18,10 @@ namespace GeometryNodes
         private ValueOutput end;
 
         private Transform parentOut;
+        private Transform voriginal;
+        private Vector3 originalPosition;
+        private Quaternion originalRotation;
+        private Vector3 originalScale;
 
         protected override void Definition()
         {
@@ -51,20 +55,47 @@ namespace GeometryNodes
         private void OnOriginalDisconnected(IUnitConnection connection)
             => OnPortDisconnected(connection, original);
 
-        public override void Clear() => parentOut.SafeDestroy();
+        public override void Clear()
+        {
+            if (voriginal)
+            {
+                if (parentOut)
+                    voriginal.parent = parentOut.parent;
+
+                voriginal.localPosition = originalPosition;
+                voriginal.localRotation = originalRotation;
+                voriginal.localScale = originalScale;
+                voriginal = null;
+            }
+
+            parentOut.SafeDestroy();
+        }
 
         protected override void Execute(Flow flow)
         {
-            var voriginal = flow.GetValue<Transform>(original);
-            var voffset   = flow.GetValue<Vector3>(offset);
-            int vcount    = flow.GetValue<int>(count);
+            if (voriginal == null)
+            {
+                voriginal = flow.GetValue<Transform>(original);
+                originalPosition = voriginal.localPosition;
+                originalRotation = voriginal.localRotation;
+                originalScale = voriginal.localScale;
+            }
+
+            var voffset = flow.GetValue<Vector3>(offset);
+            int vcount  = flow.GetValue<int>(count);
 
             flow.SetValue(start, voriginal.localPosition - voffset);
             flow.SetValue(end  , voriginal.localPosition + voffset * (vcount + 1));
-            voriginal.EnsureParent(ref parentOut, nameof(Array));
+            voriginal.MakeSibling(ref parentOut, nameof(Array));
+            voriginal.parent = parentOut;
 
             // Destroy surplus copies
-            foreach (Transform t in parentOut.Cast<Transform>().Skip(vcount).ToList())
+            List<Transform> toDestroy = parentOut
+                .Cast<Transform>()
+                .Where(x => x != voriginal)
+                .Skip(vcount)
+                .ToList();
+            foreach (Transform t in toDestroy)
                 t.SafeDestroy();
 
             // Create newly wanted copies

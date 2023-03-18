@@ -56,12 +56,12 @@ namespace GeometryNodes
                 return copy;
             }
 
-        public static void EnsureParent(this Transform child, ref Transform parent, string name)
+        public static void MakeSibling(this Transform sibling, ref Transform target, string name)
         {
-            if (parent == null)
-                parent = new GameObject($"{child.name} {name}").transform;
-            parent.parent = child.parent;
-            parent.localPosition = child.localPosition;
+            if (target == null)
+                target = new GameObject($"{sibling.name} {name}").transform;
+            target.parent = sibling.parent;
+            target.localPosition = sibling.localPosition;
         }
 
         /// <summary>

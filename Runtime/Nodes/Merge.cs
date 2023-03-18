@@ -1,6 +1,5 @@
 using Unity.VisualScripting;
 using UnityEngine;
-using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
 
@@ -60,7 +59,7 @@ namespace GeometryNodes
 
                 if (first)
                 {
-                    child.EnsureParent(ref parentOut, nameof(Merge));
+                    child.MakeSibling(ref parentOut, nameof(Merge));
                     first = false;
                 }
 

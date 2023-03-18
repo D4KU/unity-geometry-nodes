@@ -69,7 +69,7 @@ namespace GeometryNodes
                             flow.GetValue<bool>(y) ? -1 : 1,
                             flow.GetValue<bool>(z) ? -1 : 1);
 
-            voriginal.EnsureParent(ref parentOut, nameof(Mirror));
+            voriginal.MakeSibling(ref parentOut, nameof(Mirror));
             voriginal.parent = parentOut;
 
             copyOut.SafeDestroy();
