@@ -6,26 +6,23 @@ namespace GeometryNodes
     internal abstract class TransformUnit : GeometryUnit
     {
         protected ValueInput target;
-        protected ValueInput vector;
         protected ValueInput x;
         protected ValueInput y;
         protected ValueInput z;
 
         protected Transform targetValue;
-        protected Vector3? originalVector;
+        protected Vector3? original;
 
         protected override void Definition()
         {
             base.Definition();
 
             target = ValueInput<Transform>(nameof(target));
-            vector = VectorInput;
-            x = ValueInput(nameof(x), true);
-            y = ValueInput(nameof(y), true);
-            z = ValueInput(nameof(z), true);
+            x = ValueInput<float>(nameof(x));
+            y = ValueInput<float>(nameof(y));
+            z = ValueInput<float>(nameof(z));
 
             Requirement(target, input);
-            Requirement(vector, input);
         }
 
         public override void AfterAdd()
@@ -45,27 +42,22 @@ namespace GeometryNodes
 
         public override void Clear()
         {
-            if (targetValue && originalVector.HasValue)
-                SetVector(originalVector.Value);
+            if (targetValue && original.HasValue)
+                Vector = original.Value;
         }
 
         protected override void Execute(Flow flow)
         {
-            targetValue = flow.GetValue<Transform>(this.target);
-            Vector3 source = Vector;
-            Vector3 target = flow.GetValue<Vector3>(vector);
-            originalVector ??= source;
-
-            if (!flow.GetValue<bool>(x)) target.x = source.x;
-            if (!flow.GetValue<bool>(y)) target.y = source.y;
-            if (!flow.GetValue<bool>(z)) target.z = source.z;
-
-            SetVector(Convert(target));
+            targetValue = flow.GetValue<Transform>(target);
+            Vector3 v = Vector;
+            original ??= v;
+            if (x.hasValidConnection) v.x = flow.GetValue<float>(x);
+            if (y.hasValidConnection) v.y = flow.GetValue<float>(y);
+            if (z.hasValidConnection) v.z = flow.GetValue<float>(z);
+            Vector = Convert(v);
         }
 
-        protected abstract ValueInput VectorInput { get; }
-        protected abstract Vector3 Vector { get; }
-        protected abstract void SetVector(Vector3 v);
+        protected abstract Vector3 Vector { get; set; }
         protected virtual Vector3 Convert(Vector3 v) => v;
     }
 }

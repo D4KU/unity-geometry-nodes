@@ -7,8 +7,10 @@ namespace GeometryNodes
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
     internal class Rotation : TransformUnit
     {
-        protected override ValueInput VectorInput => ValueInput("Rotation", Vector3.zero);
-        protected override Vector3 Vector => targetValue.localEulerAngles;
-        protected override void SetVector(Vector3 v) => targetValue.localEulerAngles = v;
+        protected override Vector3 Vector
+        {
+            get => targetValue.localEulerAngles;
+            set => targetValue.localEulerAngles = value;
+        }
     }
 }

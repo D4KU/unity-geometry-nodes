@@ -7,7 +7,6 @@ namespace GeometryNodes
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
     internal class LookAt : Rotation
     {
-        protected override ValueInput VectorInput => ValueInput("Position", Vector3.zero);
         protected override Vector3 Convert(Vector3 v)
         {
             if (targetValue.parent)

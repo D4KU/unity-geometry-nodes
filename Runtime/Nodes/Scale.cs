@@ -7,8 +7,10 @@ namespace GeometryNodes
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
     internal class Scale : TransformUnit
     {
-        protected override ValueInput VectorInput => ValueInput("Scale", Vector3.one);
-        protected override Vector3 Vector => targetValue.localScale;
-        protected override void SetVector(Vector3 v) => targetValue.localScale = v;
+        protected override Vector3 Vector
+        {
+            get => targetValue.localScale;
+            set => targetValue.localScale = value;
+        }
     }
 }

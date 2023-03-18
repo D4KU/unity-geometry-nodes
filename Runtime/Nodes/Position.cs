@@ -7,8 +7,10 @@ namespace GeometryNodes
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
     internal class Position : TransformUnit
     {
-        protected override ValueInput VectorInput => ValueInput("Position", Vector3.zero);
-        protected override Vector3 Vector => targetValue.localPosition;
-        protected override void SetVector(Vector3 v) => targetValue.localPosition = v;
+        protected override Vector3 Vector
+        {
+            get => targetValue.localPosition;
+            set => targetValue.localPosition = value;
+        }
     }
 }
