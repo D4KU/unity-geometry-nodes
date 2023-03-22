@@ -1,7 +1,6 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using System.Linq;
-using System.Collections;
 
 namespace GeometryNodes
 {
@@ -9,7 +8,10 @@ namespace GeometryNodes
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
     internal class Merge : GeometryUnit
     {
-        private ValueInput children;
+        [Serialize, Inspectable]
+        public int valueInputCount = 2;
+
+        private ValueInput[] children;
         private ValueOutput parent;
 
         private Transform parentOut;
@@ -18,32 +20,34 @@ namespace GeometryNodes
         {
             base.Definition();
 
-            children = ValueInput<IEnumerable>(nameof(children));
-            parent = ValueOutput(nameof(parent), _ => parentOut);
+            children = new ValueInput[valueInputCount];
+            for (int i = 0; i < children.Length; i++)
+                children[i] = ValueInput<Transform>(i.ToString());
 
-            Requirement(children, input);
+            parent = ValueOutput(nameof(parent), _ => parentOut);
             Assignment(input, parent);
         }
 
         public override void AfterAdd()
         {
             base.AfterAdd();
-            graph.valueConnections.ItemRemoved += OnChildrenDisconnected;
+            graph.valueConnections.ItemRemoved += OnChildDisconnected;
         }
 
         public override void BeforeRemove()
         {
-            graph.valueConnections.ItemRemoved -= OnChildrenDisconnected;
+            graph.valueConnections.ItemRemoved -= OnChildDisconnected;
             base.BeforeRemove();
         }
 
-        private void OnChildrenDisconnected(IUnitConnection connection)
-            => OnPortDisconnected(connection, children);
+        private void OnChildDisconnected(IUnitConnection connection)
+            => OnAnyPortDisconnected(connection, children);
 
         public override void Clear()
         {
             if (parentOut == null)
                 return;
+
             foreach (Transform child in parentOut.Cast<Transform>().ToList())
                 child.parent = parentOut.parent;
             parentOut.SafeDestroy();
@@ -52,8 +56,12 @@ namespace GeometryNodes
         protected override void Execute(Flow flow)
         {
             bool first = true;
-            foreach (Transform child in flow.GetValue<IEnumerable>(children))
+            foreach (ValueInput input in children)
             {
+                if (!input.hasValidConnection)
+                    continue;
+
+                Transform child = flow.GetValue<Transform>(input);
                 if (child == null)
                     continue;
 

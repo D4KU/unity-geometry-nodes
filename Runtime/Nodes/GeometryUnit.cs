@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 
 namespace GeometryNodes
@@ -34,12 +36,22 @@ namespace GeometryNodes
         private void OnInputDisconnected(IUnitConnection connection)
             => OnPortDisconnected(connection, input);
 
+        protected void OnAnyPortDisconnected(IUnitConnection connection, IEnumerable<IUnitInputPort> destinations)
+        {
+            if (destinations.Contains(connection.destination))
+            {
+                output.ClearDownstream();
+                Clear();
+            }
+        }
+
         protected void OnPortDisconnected(IUnitConnection connection, IUnitInputPort destination)
         {
-            if (connection.destination != destination)
-                return;
-            output.ClearDownstream();
-            Clear();
+            if (connection.destination == destination)
+            {
+                output.ClearDownstream();
+                Clear();
+            }
         }
 
         private ControlOutput WrapExecute(Flow flow)
