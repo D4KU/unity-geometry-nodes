@@ -12,7 +12,6 @@ namespace GeometryNodes
         private ValueInput original;
         private ValueInput offset;
         private ValueInput count;
-        private ValueInput index;
         private ValueOutput parent;
         private ValueOutput start;
         private ValueOutput end;
@@ -30,7 +29,6 @@ namespace GeometryNodes
             original = ValueInput<Transform>(nameof(original));
             offset   = ValueInput(nameof(offset), Vector3.right);
             count    = ValueInput(nameof(count), 1);
-            index    = ValueInput(nameof(index), 0);
 
             parent = ValueOutput(nameof(parent), _ => parentOut);
             start = ValueOutput<Vector3>(nameof(start));
@@ -86,15 +84,23 @@ namespace GeometryNodes
 
             flow.SetValue(start, voriginal.localPosition - voffset);
             flow.SetValue(end  , voriginal.localPosition + voffset * (vcount + 1));
+            bool parentNull = parentOut == null;
             voriginal.MakeSibling(ref parentOut, nameof(Array));
-            voriginal.parent = parentOut;
+            if (parentNull)
+                voriginal.parent = parentOut;
 
             // Destroy surplus copies
-            List<Transform> toDestroy = parentOut
-                .Cast<Transform>()
-                .Where(x => x != voriginal)
-                .Skip(vcount)
-                .ToList();
+            List<Transform> toDestroy = new();
+            for (int i = parentOut.childCount - 1; i >= 0; i--)
+            {
+                Transform child = parentOut.GetChild(i);
+                if (child.GetComponent<Copy>())
+                {
+                    toDestroy.Add(child);
+                    if (parentOut.childCount - toDestroy.Count <= vcount)
+                        break;
+                }
+            }
             foreach (Transform t in toDestroy)
                 t.SafeDestroy();
 
@@ -106,6 +112,9 @@ namespace GeometryNodes
             foreach (Transform child in parentOut)
             {
                 child.localPosition = voffset * j++;
+                if (child.GetComponent<Group>())
+                    continue;
+
                 child.localRotation = voriginal.localRotation;
                 child.localScale = voriginal.localScale;
             }

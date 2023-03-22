@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -51,17 +52,34 @@ namespace GeometryNodes
             where T : Component
             {
                 T copy = Object.Instantiate(original, parent);
-                copy.AddComponent<CopyMark>();
+                copy.AddComponent<Copy>();
                 copy.gameObject.hideFlags = HideFlags.DontSave;
                 return copy;
             }
 
-        public static void MakeSibling(this Transform sibling, ref Transform target, string name)
+        public static bool GetOrAddComponent<T>(this Component neighbor, out T target) where T : Component
         {
-            if (target == null)
-                target = new GameObject($"{sibling.name} {name}").transform;
-            target.parent = sibling.parent;
-            target.localPosition = sibling.localPosition;
+            if (neighbor.TryGetComponent(out target))
+                return true;
+            target = neighbor.AddComponent<T>();
+            return false;
+        }
+
+        public static void MakeSibling(this Transform target, ref Transform sibling, string name)
+        {
+            if (sibling)
+            {
+                if (target.IsChildOf(sibling))
+                    return;
+            }
+            else
+            {
+                sibling = new GameObject($"{target.name} {name}", typeof(Group)).transform;
+            }
+
+            sibling.parent = target.parent;
+            sibling.SetSiblingIndex(target.GetSiblingIndex());
+            sibling.localPosition = target.localPosition;
         }
 
         /// <summary>

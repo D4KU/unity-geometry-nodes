@@ -3,7 +3,7 @@ using UnityEngine;
 namespace GeometryNodes
 {
     [ExecuteAlways]
-    internal class CopyMark : MonoBehaviour
+    internal class Copy : MonoBehaviour
     {
         private void Awake()
         {
