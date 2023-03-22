@@ -11,7 +11,6 @@ namespace GeometryNodes
         protected ValueInput z;
 
         protected Transform targetValue;
-        protected Vector3? original;
 
         protected override void Definition()
         {
@@ -40,17 +39,10 @@ namespace GeometryNodes
         private void OnTargetDisconnected(IUnitConnection connection)
             => OnPortDisconnected(connection, target);
 
-        public override void Clear()
-        {
-            if (targetValue && original.HasValue)
-                Vector = original.Value;
-        }
-
         protected override void Execute(Flow flow)
         {
             targetValue = flow.GetValue<Transform>(target);
             Vector3 v = Vector;
-            original ??= v;
             if (x.hasValidConnection) v.x = flow.GetValue<float>(x);
             if (y.hasValidConnection) v.y = flow.GetValue<float>(y);
             if (z.hasValidConnection) v.z = flow.GetValue<float>(z);

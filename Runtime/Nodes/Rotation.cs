@@ -10,7 +10,22 @@ namespace GeometryNodes
         protected override Vector3 Vector
         {
             get => targetValue.localEulerAngles;
-            set => targetValue.localEulerAngles = value;
+            set
+            {
+                if (!targetValue.GetOrAddComponent(out RotationOverride o))
+                    o.original = targetValue.localRotation;
+
+                targetValue.localEulerAngles = value;
+            }
+        }
+
+        public override void Clear()
+        {
+            if (targetValue && targetValue.TryGetComponent(out RotationOverride o))
+            {
+                targetValue.localRotation = o.original;
+                o.SafeDestroy();
+            }
         }
     }
 }

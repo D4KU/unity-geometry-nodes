@@ -10,7 +10,22 @@ namespace GeometryNodes
         protected override Vector3 Vector
         {
             get => targetValue.localPosition;
-            set => targetValue.localPosition = value;
+            set
+            {
+                if (!targetValue.GetOrAddComponent(out PositionOverride o))
+                    o.original = Vector;
+
+                targetValue.localPosition = value;
+            }
+        }
+
+        public override void Clear()
+        {
+            if (targetValue && targetValue.TryGetComponent(out PositionOverride o))
+            {
+                Vector = o.original;
+                o.SafeDestroy();
+            }
         }
     }
 }
