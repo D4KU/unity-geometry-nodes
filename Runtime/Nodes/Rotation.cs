@@ -12,11 +12,15 @@ namespace GeometryNodes
             get => targetValue.localEulerAngles;
             set
             {
-                if (!targetValue.GetOrAddComponent(out RotationOverride o))
-                    o.original = targetValue.localRotation;
-
+                AddOverride();
                 targetValue.localEulerAngles = value;
             }
+        }
+
+        protected void AddOverride()
+        {
+            if (!targetValue.GetOrAddComponent(out RotationOverride o))
+                o.original = targetValue.localRotation;
         }
 
         public override void Clear()

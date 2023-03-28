@@ -46,10 +46,9 @@ namespace GeometryNodes
             if (x.hasValidConnection) v.x = flow.GetValue<float>(x);
             if (y.hasValidConnection) v.y = flow.GetValue<float>(y);
             if (z.hasValidConnection) v.z = flow.GetValue<float>(z);
-            Vector = Convert(v);
+            Vector = v;
         }
 
         protected abstract Vector3 Vector { get; set; }
-        protected virtual Vector3 Convert(Vector3 v) => v;
     }
 }
