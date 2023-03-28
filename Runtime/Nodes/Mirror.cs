@@ -82,13 +82,11 @@ namespace GeometryNodes
             }
 
             Transform voriginal = flow.GetValue<Transform>(original);
-            voriginal.MakeSibling(ref parentOut, nameof(Mirror));
-            voriginal.parent = parentOut;
-            voriginal.localPosition = Vector3.zero;
+            voriginal.Group(ref parentOut, nameof(Mirror));
 
             copyOut.SafeDestroy();
             copyOut = voriginal.Duplicate(parentOut);
-            copyOut.localPosition = Vector3.Scale(voriginal.localPosition - p, s) + p;
+            copyOut.localPosition = Vector3.Scale(parentOut.InverseTransformPoint(voriginal.position) - p, s) + p;
             copyOut.localRotation = voriginal.localRotation;
             copyOut.localScale = Vector3.Scale(voriginal.localScale, s);
         }

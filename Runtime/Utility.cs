@@ -65,21 +65,21 @@ namespace GeometryNodes
             return false;
         }
 
-        public static void MakeSibling(this Transform target, ref Transform sibling, string name)
+        public static void Group(this Transform target, ref Transform group, string name)
         {
-            if (sibling)
-            {
-                if (target.IsChildOf(sibling))
-                    return;
-            }
-            else
-            {
-                sibling = new GameObject($"{target.name} {name}", typeof(Group)).transform;
-            }
+            bool groupNull = group == null;
 
-            sibling.parent = target.parent;
-            sibling.SetSiblingIndex(target.GetSiblingIndex());
-            sibling.localPosition = target.localPosition;
+            if (groupNull)
+                group = new GameObject($"{target.name} {name}", typeof(Group)).transform;
+            else if (target.IsChildOf(group))
+                return;
+
+            group.parent = target.parent;
+            group.SetSiblingIndex(target.GetSiblingIndex());
+            group.localPosition = target.localPosition;
+
+            if (groupNull)
+                target.parent = group;
         }
 
         /// <summary>

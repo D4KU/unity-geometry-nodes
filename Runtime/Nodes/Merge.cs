@@ -67,8 +67,9 @@ namespace GeometryNodes
 
                 if (first)
                 {
-                    child.MakeSibling(ref parentOut, nameof(Merge));
+                    child.Group(ref parentOut, nameof(Merge));
                     first = false;
+                    continue;
                 }
 
                 child.parent = parentOut;

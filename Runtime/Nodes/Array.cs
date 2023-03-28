@@ -84,10 +84,7 @@ namespace GeometryNodes
 
             flow.SetValue(start, voriginal.localPosition - voffset);
             flow.SetValue(end  , voriginal.localPosition + voffset * (vcount + 1));
-            bool parentNull = parentOut == null;
-            voriginal.MakeSibling(ref parentOut, nameof(Array));
-            if (parentNull)
-                voriginal.parent = parentOut;
+            voriginal.Group(ref parentOut, nameof(Array));
 
             // Destroy surplus copies
             List<Transform> toDestroy = new();
