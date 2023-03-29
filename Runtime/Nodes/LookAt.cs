@@ -32,7 +32,7 @@ namespace GeometryNodes
             if (forward == Vector3.zero)
                 forward = Vector3.forward;
 
-            AddOverride();
+            AddOverride(targetValue);
             targetValue.localRotation = Quaternion.LookRotation(forward, up);
         }
     }

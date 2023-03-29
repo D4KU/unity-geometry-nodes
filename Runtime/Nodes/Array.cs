@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -17,10 +16,6 @@ namespace GeometryNodes
         private ValueOutput end;
 
         private Transform parentOut;
-        private Transform voriginal;
-        private Vector3 originalPosition;
-        private Quaternion originalRotation;
-        private Vector3 originalScale;
 
         protected override void Definition()
         {
@@ -55,15 +50,16 @@ namespace GeometryNodes
 
         public override void Clear()
         {
-            if (voriginal)
-            {
-                if (parentOut)
-                    voriginal.parent = parentOut.parent;
+            if (parentOut == null)
+                return;
 
-                voriginal.localPosition = originalPosition;
-                voriginal.localRotation = originalRotation;
-                voriginal.localScale = originalScale;
-                voriginal = null;
+            foreach (Transform child in parentOut)
+            {
+                if (!child.GetComponent<Copy>() && !child.GetComponent<Group>())
+                {
+                    child.parent = parentOut.parent;
+                    Position.RemoveOverride(child);
+                }
             }
 
             parentOut.SafeDestroy();
@@ -71,16 +67,9 @@ namespace GeometryNodes
 
         protected override void Execute(Flow flow)
         {
-            if (voriginal == null)
-            {
-                voriginal = flow.GetValue<Transform>(original);
-                originalPosition = voriginal.localPosition;
-                originalRotation = voriginal.localRotation;
-                originalScale = voriginal.localScale;
-            }
-
             var voffset = flow.GetValue<Vector3>(offset);
             int vcount  = flow.GetValue<int>(count);
+            Transform voriginal = flow.GetValue<Transform>(original);
 
             flow.SetValue(start, voriginal.localPosition - voffset);
             flow.SetValue(end  , voriginal.localPosition + voffset * (vcount + 1));
@@ -88,23 +77,22 @@ namespace GeometryNodes
 
             // Destroy surplus copies
             List<Transform> toDestroy = new();
-            for (int i = parentOut.childCount - 1; i >= 0; i--)
+            int childCnt = parentOut.childCount;
+            for (int i = childCnt - 1; i >= 0 && childCnt - toDestroy.Count > vcount; i--)
             {
                 Transform child = parentOut.GetChild(i);
-                if (child.GetComponent<Copy>())
-                {
+                if (child != voriginal && child.GetComponent<Copy>())
                     toDestroy.Add(child);
-                    if (parentOut.childCount - toDestroy.Count <= vcount)
-                        break;
-                }
             }
             foreach (Transform t in toDestroy)
                 t.SafeDestroy();
 
             // Create newly wanted copies
-            for (int i = parentOut.childCount; i <= vcount; i++)
+            for (int i = parentOut.childCount; i < vcount; i++)
                 voriginal.Duplicate(parentOut).name += $"({i})";
 
+            // Position children
+            Position.AddOverride(voriginal);
             int j = 0;
             foreach (Transform child in parentOut)
             {

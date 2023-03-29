@@ -12,18 +12,28 @@ namespace GeometryNodes
             get => targetValue.localScale;
             set
             {
-                if (!targetValue.GetOrAddComponent(out ScaleOverride o))
-                    o.original = Vector;
-
+                AddOverride(targetValue);
                 targetValue.localScale = value;
             }
         }
 
         public override void Clear()
         {
-            if (targetValue && targetValue.TryGetComponent(out ScaleOverride o))
+            if (targetValue)
+                RemoveOverride(targetValue);
+        }
+
+        public static void AddOverride(Transform t)
+        {
+            if (!t.GetOrAddComponent(out ScaleOverride o))
+                o.original = t.localScale;
+        }
+
+        public static void RemoveOverride(Transform t)
+        {
+            if (t.TryGetComponent(out ScaleOverride o))
             {
-                Vector = o.original;
+                t.localScale = o.original;
                 o.SafeDestroy();
             }
         }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -53,9 +52,17 @@ namespace GeometryNodes
             {
                 T copy = Object.Instantiate(original, parent);
                 copy.AddComponent<Copy>();
+                copy.transform.RemoveOverrides();
                 copy.gameObject.hideFlags = HideFlags.DontSave;
                 return copy;
             }
+
+        public static void RemoveOverrides(this Transform t)
+        {
+            Position.RemoveOverride(t);
+            Rotation.RemoveOverride(t);
+            Scale   .RemoveOverride(t);
+        }
 
         public static bool GetOrAddComponent<T>(this Component neighbor, out T target) where T : Component
         {
@@ -67,19 +74,18 @@ namespace GeometryNodes
 
         public static void Group(this Transform target, ref Transform group, string name)
         {
-            bool groupNull = group == null;
-
-            if (groupNull)
+            if (group == null)
+            {
                 group = new GameObject($"{target.name} {name}", typeof(Group)).transform;
+                group.gameObject.hideFlags = HideFlags.DontSave;
+            }
             else if (target.IsChildOf(group))
                 return;
 
             group.parent = target.parent;
             group.SetSiblingIndex(target.GetSiblingIndex());
             group.localPosition = target.localPosition;
-
-            if (groupNull)
-                target.parent = group;
+            target.parent = group;
         }
 
         /// <summary>

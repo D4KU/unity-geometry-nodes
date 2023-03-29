@@ -2,12 +2,8 @@ using UnityEngine;
 
 namespace GeometryNodes
 {
-    [ExecuteAlways]
+    [DisallowMultipleComponent]
     internal class Group : MonoBehaviour
     {
-        private void Awake()
-        {
-            gameObject.hideFlags = HideFlags.DontSave;
-        }
     }
 }

@@ -12,18 +12,28 @@ namespace GeometryNodes
             get => targetValue.localPosition;
             set
             {
-                if (!targetValue.GetOrAddComponent(out PositionOverride o))
-                    o.original = Vector;
-
+                AddOverride(targetValue);
                 targetValue.localPosition = value;
             }
         }
 
         public override void Clear()
         {
-            if (targetValue && targetValue.TryGetComponent(out PositionOverride o))
+            if (targetValue)
+                RemoveOverride(targetValue);
+        }
+
+        public static void AddOverride(Transform t)
+        {
+            if (!t.GetOrAddComponent(out PositionOverride o))
+                o.original = t.localPosition;
+        }
+
+        public static void RemoveOverride(Transform t)
+        {
+            if (t.TryGetComponent(out PositionOverride o))
             {
-                Vector = o.original;
+                t.localPosition = o.original;
                 o.SafeDestroy();
             }
         }
