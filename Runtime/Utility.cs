@@ -76,13 +76,14 @@ namespace GeometryNodes
         {
             if (group == null)
             {
-                group = new GameObject($"{target.name} {name}", typeof(Group)).transform;
+                group = new GameObject($"{target.name} {name}").transform;
+                group.AddComponent<Group>().Id = Random.Range(int.MinValue, int.MaxValue);
                 group.gameObject.hideFlags = HideFlags.DontSave;
             }
             else if (target.IsChildOf(group))
                 return;
 
-            group.parent = target.parent;
+            group.SetParent(target.parent, false);
             group.SetSiblingIndex(target.GetSiblingIndex());
             group.localPosition = target.localPosition;
             target.parent = group;

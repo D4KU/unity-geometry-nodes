@@ -12,10 +12,12 @@ namespace GeometryNodes
         private ValueInput offset;
         private ValueInput count;
         private ValueOutput parent;
+        private ValueOutput copies;
         private ValueOutput start;
         private ValueOutput end;
 
         private Transform parentOut;
+        private readonly List<Transform> copiesOut = new();
 
         protected override void Definition()
         {
@@ -26,6 +28,7 @@ namespace GeometryNodes
             count    = ValueInput(nameof(count), 1);
 
             parent = ValueOutput(nameof(parent), _ => parentOut);
+            copies = ValueOutput<List<Transform>>(nameof(copies), _ => copiesOut);
             start = ValueOutput<Vector3>(nameof(start));
             end = ValueOutput<Vector3>(nameof(end));
 
@@ -63,6 +66,7 @@ namespace GeometryNodes
             }
 
             parentOut.SafeDestroy();
+            copiesOut.Clear();
         }
 
         protected override void Execute(Flow flow)
@@ -70,6 +74,9 @@ namespace GeometryNodes
             var voffset = flow.GetValue<Vector3>(offset);
             int vcount  = flow.GetValue<int>(count);
             Transform voriginal = flow.GetValue<Transform>(original);
+
+            if (copiesOut.Count == 0)
+                copiesOut.Add(voriginal);
 
             flow.SetValue(start, voriginal.localPosition - voffset);
             flow.SetValue(end  , voriginal.localPosition + voffset * (vcount + 1));
@@ -82,22 +89,30 @@ namespace GeometryNodes
             {
                 Transform child = parentOut.GetChild(i);
                 if (child != voriginal && child.GetComponent<Copy>())
+                {
                     toDestroy.Add(child);
+                    copiesOut.Remove(child);
+                }
             }
             foreach (Transform t in toDestroy)
                 t.SafeDestroy();
 
             // Create newly wanted copies
             for (int i = parentOut.childCount; i < vcount; i++)
-                voriginal.Duplicate(parentOut).name += $"({i})";
+            {
+                Transform copy = voriginal.Duplicate(parentOut);
+                copy.name += $"({i})";
+                copiesOut.Add(copy);
+            }
 
             // Position children
             Position.AddOverride(voriginal);
+            int? origId = voriginal.TryGetComponent(out Group g) ? g.Id : null;
             int j = 0;
             foreach (Transform child in parentOut)
             {
                 child.localPosition = voffset * j++;
-                if (child.GetComponent<Group>())
+                if (child.TryGetComponent(out Group gr) && gr.Id != origId)
                     continue;
 
                 child.localRotation = voriginal.localRotation;
