@@ -5,6 +5,11 @@ namespace GeometryNodes
     [DisallowMultipleComponent]
     internal class RotationOverride : MonoBehaviour
     {
-        public Quaternion original;
+        private Quaternion original;
+        public Quaternion Original
+        {
+            get => original;
+            set => original = value;
+        }
     }
 }

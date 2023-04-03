@@ -5,6 +5,11 @@ namespace GeometryNodes
     [DisallowMultipleComponent]
     internal class PositionOverride : MonoBehaviour
     {
-        public Vector3 original;
+        private Vector3 original;
+        public Vector3 Original
+        {
+            get => original;
+            set => original = value;
+        }
     }
 }

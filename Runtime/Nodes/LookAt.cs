@@ -18,10 +18,11 @@ namespace GeometryNodes
         protected override void Execute(Flow flow)
         {
             targetValue = flow.GetValue<Transform>(target);
-            float vroll = roll.hasValidConnection ? flow.GetValue<float>(roll) : 0;
-            Vector3 up = targetValue.localRotation
-                * Quaternion.Euler(0, 0, vroll)
-                * Vector3.up;
+            Quaternion origRot = AddOverride(targetValue).Original;
+
+            Vector3 up = roll.hasValidConnection
+                ? Quaternion.Euler(0, flow.GetValue<float>(roll), 0) * Vector3.right
+                : origRot * Vector3.up;
 
             Vector3 forward = Vector3.zero;
 
@@ -32,7 +33,6 @@ namespace GeometryNodes
             if (forward == Vector3.zero)
                 forward = Vector3.forward;
 
-            AddOverride(targetValue);
             targetValue.localRotation = Quaternion.LookRotation(forward, up);
         }
     }

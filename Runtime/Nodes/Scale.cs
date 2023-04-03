@@ -26,14 +26,14 @@ namespace GeometryNodes
         public static void AddOverride(Transform t)
         {
             if (!t.GetOrAddComponent(out ScaleOverride o))
-                o.original = t.localScale;
+                o.Original = t.localScale;
         }
 
         public static void RemoveOverride(Transform t)
         {
             if (t.TryGetComponent(out ScaleOverride o))
             {
-                t.localScale = o.original;
+                t.localScale = o.Original;
                 o.SafeDestroy();
             }
         }

@@ -26,14 +26,14 @@ namespace GeometryNodes
         public static void AddOverride(Transform t)
         {
             if (!t.GetOrAddComponent(out PositionOverride o))
-                o.original = t.localPosition;
+                o.Original = t.localPosition;
         }
 
         public static void RemoveOverride(Transform t)
         {
             if (t.TryGetComponent(out PositionOverride o))
             {
-                t.localPosition = o.original;
+                t.localPosition = o.Original;
                 o.SafeDestroy();
             }
         }

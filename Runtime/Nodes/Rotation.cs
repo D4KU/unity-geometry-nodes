@@ -23,17 +23,18 @@ namespace GeometryNodes
                 RemoveOverride(targetValue);
         }
 
-        public static void AddOverride(Transform t)
+        public static RotationOverride AddOverride(Transform t)
         {
             if (!t.GetOrAddComponent(out RotationOverride o))
-                o.original = t.localRotation;
+                o.Original = t.localRotation;
+            return o;
         }
 
         public static void RemoveOverride(Transform t)
         {
             if (t.TryGetComponent(out RotationOverride o))
             {
-                t.localRotation = o.original;
+                t.localRotation = o.Original;
                 o.SafeDestroy();
             }
         }
