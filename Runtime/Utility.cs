@@ -28,25 +28,6 @@ namespace GeometryNodes
                 toClear[i].Clear();
         }
 
-        public static void SetValue<T>(
-            this List<GeometryNodeInput.Pair<T>> list,
-            string key,
-            T value)
-        {
-            for (int i = 0; i < list.Count; i++)
-            {
-                var pair = list[i];
-                if (pair.key == key)
-                {
-                    pair.value = value;
-                    list[i] = pair;
-                    return;
-                }
-            }
-
-            list.Add(new() { key = key, value = value });
-        }
-
         public static T Duplicate<T>(this T original, Transform parent = null)
             where T : Component
             {
