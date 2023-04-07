@@ -5,38 +5,18 @@ namespace GeometryNodes
 {
     [TypeIcon(typeof(Quaternion))]
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
-    internal class Rotation : TransformUnit
+    public class Rotation : TransformUnit
     {
         protected override Vector3 Vector
         {
             get => targetValue.localEulerAngles;
             set
             {
-                AddOverride(targetValue);
+                RotationOverride.Add(targetValue);
                 targetValue.localEulerAngles = value;
             }
         }
 
-        public override void Clear()
-        {
-            if (targetValue)
-                RemoveOverride(targetValue);
-        }
-
-        public static RotationOverride AddOverride(Transform t)
-        {
-            if (!t.GetOrAddComponent(out RotationOverride o))
-                o.Original = t.localRotation;
-            return o;
-        }
-
-        public static void RemoveOverride(Transform t)
-        {
-            if (t.TryGetComponent(out RotationOverride o))
-            {
-                t.localRotation = o.Original;
-                o.SafeDestroy();
-            }
-        }
+        public override void Clear() => RotationOverride.Remove(targetValue);
     }
 }

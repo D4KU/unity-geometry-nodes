@@ -5,14 +5,14 @@ namespace GeometryNodes
 {
     [TypeIcon(typeof(Variables))]
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
-    internal class Mirror : GeometryUnit
+    public class Mirror : GeometryUnit
     {
-        private ValueInput original;
-        private ValueInput x;
-        private ValueInput y;
-        private ValueInput z;
-        private ValueOutput parent;
-        private ValueOutput copy;
+        [DoNotSerialize] public ValueInput original;
+        [DoNotSerialize] public ValueInput x;
+        [DoNotSerialize] public ValueInput y;
+        [DoNotSerialize] public ValueInput z;
+        [DoNotSerialize] public ValueOutput parent;
+        [DoNotSerialize] public ValueOutput copy;
 
         private Transform parentOut;
         private Transform copyOut;
@@ -82,7 +82,8 @@ namespace GeometryNodes
             }
 
             Transform voriginal = flow.GetValue<Transform>(original);
-            voriginal.Group(ref parentOut, nameof(Mirror));
+            if (parentOut == null)
+                parentOut = voriginal.Group(nameof(Mirror));
 
             copyOut.SafeDestroy();
             copyOut = voriginal.Duplicate(parentOut);

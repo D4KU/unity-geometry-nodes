@@ -4,10 +4,16 @@ using UnityEngine;
 
 namespace GeometryNodes
 {
+    /// <summary>
+    /// Adds buttons for managing Geometry Nodes next to input variables
+    /// </summary>
     [CustomEditor(typeof(Variables))]
     internal class VariablesEditor : Editor
     {
-        Editor wrapped;
+        /// <summary>
+        /// Default editor for Variable component
+        /// </summary>
+        private Editor wrapped;
 
         public override void OnInspectorGUI()
         {
@@ -16,22 +22,22 @@ namespace GeometryNodes
 
             EditorGUI.BeginChangeCheck();
             wrapped.OnInspectorGUI();
-            bool changed = EditorGUI.EndChangeCheck();
+            bool varChanged = EditorGUI.EndChangeCheck();
 
-            if (!((Component)target).TryGetComponent(out GeometryMachine input))
+            if (!((Component)target).TryGetComponent(out GeometryMachine machine))
                 return;
 
-            if (input.Initialized)
+            if (machine.Initialized)
             {
                 if (GUILayout.Button("Clear Geometry Nodes"))
-                    input.Clear();
-                else if (changed)
-                    input.TraverseGraph();
+                    machine.Clear();
+                else if (varChanged)
+                    machine.TraverseGraph();
             }
             else
             {
                 if (GUILayout.Button("Initialize Geometry Nodes"))
-                    input.Initialize();
+                    machine.Initialize();
             }
         }
     }

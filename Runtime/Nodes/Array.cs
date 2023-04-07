@@ -4,17 +4,21 @@ using UnityEngine;
 
 namespace GeometryNodes
 {
+    /// <summary>
+    /// Creates a variable amount of copies from a template object and
+    /// positions them with a given offset
+    /// </summary>
     [TypeIcon(typeof(List<>))]
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
-    internal class Array : GeometryUnit
+    public class Array : GeometryUnit
     {
-        private ValueInput original;
-        private ValueInput offset;
-        private ValueInput count;
-        private ValueOutput parent;
-        private ValueOutput copies;
-        private ValueOutput start;
-        private ValueOutput end;
+        [DoNotSerialize] public ValueInput original;
+        [DoNotSerialize] public ValueInput offset;
+        [DoNotSerialize] public ValueInput count;
+        [DoNotSerialize] public ValueOutput parent;
+        [DoNotSerialize] public ValueOutput copies;
+        [DoNotSerialize] public ValueOutput start;
+        [DoNotSerialize] public ValueOutput end;
 
         private Transform parentOut;
         private readonly List<Transform> copiesOut = new();
@@ -61,7 +65,7 @@ namespace GeometryNodes
                 if (!child.GetComponent<Copy>() && !child.GetComponent<Group>())
                 {
                     child.parent = parentOut.parent;
-                    Position.RemoveOverride(child);
+                    PositionOverride.Remove(child);
                 }
             }
 
@@ -80,7 +84,8 @@ namespace GeometryNodes
 
             flow.SetValue(start, voriginal.localPosition - voffset);
             flow.SetValue(end  , voriginal.localPosition + voffset * (vcount + 1));
-            voriginal.Group(ref parentOut, nameof(Array));
+            if (parentOut == null)
+                parentOut = voriginal.Group(nameof(Array));
 
             // Destroy surplus copies
             List<Transform> toDestroy = new();
@@ -106,7 +111,7 @@ namespace GeometryNodes
             }
 
             // Position children
-            Position.AddOverride(voriginal);
+            PositionOverride.Add(voriginal);
             int? origId = voriginal.TryGetComponent(out Group g) ? g.Id : null;
             int j = 0;
             foreach (Transform child in parentOut)

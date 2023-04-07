@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace GeometryNodes
 {
-    internal abstract class TransformUnit : GeometryUnit
+    public abstract class TransformUnit : GeometryUnit
     {
-        protected ValueInput target;
-        protected ValueInput x;
-        protected ValueInput y;
-        protected ValueInput z;
+        [DoNotSerialize] public ValueInput target;
+        [DoNotSerialize] public ValueInput x;
+        [DoNotSerialize] public ValueInput y;
+        [DoNotSerialize] public ValueInput z;
 
         protected Transform targetValue;
 

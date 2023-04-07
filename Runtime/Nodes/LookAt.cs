@@ -5,9 +5,9 @@ namespace GeometryNodes
 {
     [TypeIcon(typeof(Ray))]
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
-    internal class LookAt : Rotation
+    public class LookAt : Rotation
     {
-        protected ValueInput roll;
+        [DoNotSerialize] public ValueInput roll;
 
         protected override void Definition()
         {
@@ -18,7 +18,7 @@ namespace GeometryNodes
         protected override void Execute(Flow flow)
         {
             targetValue = flow.GetValue<Transform>(target);
-            Quaternion origRot = AddOverride(targetValue).Original;
+            Quaternion origRot = RotationOverride.Add(targetValue).Original;
 
             Vector3 up = roll.hasValidConnection
                 ? Quaternion.Euler(0, flow.GetValue<float>(roll), 0) * Vector3.right

@@ -5,7 +5,7 @@ using Unity.VisualScripting;
 namespace GeometryNodes
 {
     [UnitCategory(GeometryUnit.CATEGORY)]
-    internal abstract class GeometryUnit : Unit
+    public abstract class GeometryUnit : Unit
     {
         public const string SUBTITLE = "Geometry Node";
         public const string CATEGORY = "Geometry Nodes";

@@ -6,13 +6,11 @@ namespace GeometryNodes
 {
     [TypeIcon(typeof(ISelectUnit))]
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
-    internal class Merge : GeometryUnit
+    public class Merge : GeometryUnit
     {
-        [Serialize, Inspectable]
-        public int valueInputCount = 2;
-
-        private ValueInput[] children;
-        private ValueOutput parent;
+        [Serialize, Inspectable] public int valueInputCount = 2;
+        [DoNotSerialize] public ValueInput[] children;
+        [DoNotSerialize] public ValueOutput parent;
 
         private Transform parentOut;
 
@@ -67,7 +65,8 @@ namespace GeometryNodes
 
                 if (first)
                 {
-                    child.Group(ref parentOut, nameof(Merge));
+                    if (parentOut == null)
+                        parentOut = child.Group(nameof(Merge));
                     first = false;
                     continue;
                 }

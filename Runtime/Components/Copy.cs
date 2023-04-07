@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace GeometryNodes
 {
-    internal class Copy : MonoBehaviour
-    {
-    }
+    /// <summary>
+    /// Flags objects created by a node from a template object
+    /// </summary>
+    internal class Copy : MonoBehaviour {}
 }
