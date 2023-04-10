@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -58,6 +59,22 @@ namespace GeometryNodes
             RotationOverride.Remove(t);
             ScaleOverride.Remove(t);
         }
+
+        /// <summary>
+        /// Get the <see cref="Group"/> ID of the object with the given
+        /// component
+        /// </summary>
+        public static int? GroupId(this Component neighbor)
+            => neighbor.TryGetComponent(out Group g) ? g.Id : null;
+
+        /// <summary>
+        /// Return all child objects that have to be removed from
+        /// <paramref name="parent"/>s hierarchy before it gets destroyed.
+        /// </summary>
+        public static List<Transform> ChildrenToRescue(this Transform parent)
+            => parent.Cast<Transform>()
+                     .Where(x => x.GetComponent<Copy>() == null)
+                     .ToList();
 
         /// <summary>
         /// Get a neighboring component, add one if none exists

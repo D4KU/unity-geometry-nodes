@@ -1,8 +1,12 @@
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
 namespace GeometryNodes
 {
+    /// <summary>
+    /// Create a copy of an object with inverted scale on one or multiple axes
+    /// </summary>
     [TypeIcon(typeof(Variables))]
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
     public class Mirror : GeometryUnit
@@ -14,13 +18,20 @@ namespace GeometryNodes
         [DoNotSerialize] public ValueOutput parent;
         [DoNotSerialize] public ValueOutput copy;
 
+        /// <summary>
+        /// The parent object created for the original and its mirrored copy
+        /// </summary>
         private Transform parentOut;
+
+        /// <summary>
+        /// The mirrored copy created
+        /// </summary>
         private Transform copyOut;
+
+        protected override IEnumerable<ValueInput> Required => new[] { original };
 
         protected override void Definition()
         {
-            base.Definition();
-
             original = ValueInput<Transform>(nameof(original));
             x = ValueInput<float>(nameof(x));
             y = ValueInput<float>(nameof(y));
@@ -29,56 +40,46 @@ namespace GeometryNodes
             parent = ValueOutput(nameof(parent), _ => parentOut);
             copy = ValueOutput(nameof(copy), _ => copyOut);
 
-            Requirement(original, input);
+            base.Definition();
             Assignment(input, parent);
         }
-
-        public override void AfterAdd()
-        {
-            base.AfterAdd();
-            graph.valueConnections.ItemRemoved += OnOriginalDisconnected;
-        }
-
-        public override void BeforeRemove()
-        {
-            graph.valueConnections.ItemRemoved -= OnOriginalDisconnected;
-            base.BeforeRemove();
-        }
-
-        private void OnOriginalDisconnected(IUnitConnection connection)
-            => OnPortDisconnected(connection, original);
 
         public override void Clear()
         {
             if (parentOut == null)
                 return;
 
-            foreach (Transform child in parentOut)
-                if (child != copyOut)
-                    child.parent = parentOut.parent;
+            foreach (Transform child in parentOut.ChildrenToRescue())
+                child.parent = parentOut.parent;
 
             parentOut.SafeDestroy();
         }
 
         protected override void Execute(Flow flow)
         {
-            Vector3 p = Vector3.zero;
-            Vector3 s = Vector3.one;
+            // The copy is moved on each mirrored axis so that the signed distance
+            // between the original and the pivot is equal to the inverse
+            // signed distance between the copy and pivot on the respective axis
+            Vector3 pivot = Vector3.zero;
 
+            // On every mirrored axis the scale of the copy is inverted
+            Vector3 scale = Vector3.one;
+
+            // Scale and move the original on every axis with a connection
             if (x.hasValidConnection)
             {
-                p.x = flow.GetValue<float>(x);
-                s.x = -1;
+                pivot.x = flow.GetValue<float>(x);
+                scale.x = -1;
             }
             if (y.hasValidConnection)
             {
-                p.y = flow.GetValue<float>(y);
-                s.y = -1;
+                pivot.y = flow.GetValue<float>(y);
+                scale.y = -1;
             }
             if (z.hasValidConnection)
             {
-                p.z = flow.GetValue<float>(z);
-                s.z = -1;
+                pivot.z = flow.GetValue<float>(z);
+                scale.z = -1;
             }
 
             Transform voriginal = flow.GetValue<Transform>(original);
@@ -87,9 +88,12 @@ namespace GeometryNodes
 
             copyOut.SafeDestroy();
             copyOut = voriginal.Duplicate(parentOut);
-            copyOut.localPosition = Vector3.Scale(parentOut.InverseTransformPoint(voriginal.position) - p, s) + p;
+
+            // Pivot point coordinates are in local space of parent
+            copyOut.localPosition = pivot + Vector3.Scale(scale,
+                parentOut.InverseTransformPoint(voriginal.position) - pivot);
             copyOut.localRotation = voriginal.localRotation;
-            copyOut.localScale = Vector3.Scale(voriginal.localScale, s);
+            copyOut.localScale = Vector3.Scale(scale, voriginal.localScale);
         }
     }
 }

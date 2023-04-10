@@ -1,77 +1,68 @@
 using Unity.VisualScripting;
 using UnityEngine;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace GeometryNodes
 {
+    /// <summary>
+    /// Create a common group object for a variable number of child objects
+    /// </summary>
     [TypeIcon(typeof(ISelectUnit))]
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
     public class Merge : GeometryUnit
     {
+        /// <summary>
+        /// Number of input objects to group
+        /// </summary>
         [Serialize, Inspectable] public int valueInputCount = 2;
-        [DoNotSerialize] public ValueInput[] children;
+
+        [DoNotSerialize] public ValueInput[] targets;
         [DoNotSerialize] public ValueOutput parent;
 
+        /// <summary>
+        /// Group object created
+        /// </summary>
         private Transform parentOut;
+
+        protected override IEnumerable<ValueInput> Required => targets;
 
         protected override void Definition()
         {
-            base.Definition();
-
-            children = new ValueInput[valueInputCount];
-            for (int i = 0; i < children.Length; i++)
-                children[i] = ValueInput<Transform>(i.ToString());
-
             parent = ValueOutput(nameof(parent), _ => parentOut);
+
+            // Create the specified number of input ports
+            targets = new ValueInput[valueInputCount];
+            for (int i = 0; i < targets.Length; i++)
+                targets[i] = ValueInput<Transform>(i.ToString());
+
+            base.Definition();
             Assignment(input, parent);
         }
-
-        public override void AfterAdd()
-        {
-            base.AfterAdd();
-            graph.valueConnections.ItemRemoved += OnChildDisconnected;
-        }
-
-        public override void BeforeRemove()
-        {
-            graph.valueConnections.ItemRemoved -= OnChildDisconnected;
-            base.BeforeRemove();
-        }
-
-        private void OnChildDisconnected(IUnitConnection connection)
-            => OnAnyPortDisconnected(connection, children);
 
         public override void Clear()
         {
             if (parentOut == null)
                 return;
 
-            foreach (Transform child in parentOut.Cast<Transform>().ToList())
+            foreach (Transform child in parentOut.ChildrenToRescue())
                 child.parent = parentOut.parent;
             parentOut.SafeDestroy();
         }
 
         protected override void Execute(Flow flow)
         {
-            bool first = true;
-            foreach (ValueInput input in children)
+            foreach (ValueInput target in targets)
             {
-                if (!input.hasValidConnection)
+                if (!target.hasValidConnection)
                     continue;
 
-                Transform child = flow.GetValue<Transform>(input);
-                if (child == null)
+                Transform vtarget = flow.GetValue<Transform>(target);
+                if (vtarget == null)
                     continue;
 
-                if (first)
-                {
-                    if (parentOut == null)
-                        parentOut = child.Group(nameof(Merge));
-                    first = false;
-                    continue;
-                }
-
-                child.parent = parentOut;
+                if (parentOut == null)
+                    parentOut = vtarget.Group(nameof(Merge));
+                vtarget.parent = parentOut;
             }
         }
     }

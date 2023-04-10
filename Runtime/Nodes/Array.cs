@@ -20,13 +20,20 @@ namespace GeometryNodes
         [DoNotSerialize] public ValueOutput start;
         [DoNotSerialize] public ValueOutput end;
 
+        /// <summary>
+        /// Parent created for Original and its copies
+        /// </summary>
         private Transform parentOut;
+
+        /// <summary>
+        /// List of copies created with original as first entry
+        /// </summary>
         private readonly List<Transform> copiesOut = new();
+
+        protected override IEnumerable<ValueInput> Required => new[] { original };
 
         protected override void Definition()
         {
-            base.Definition();
-
             original = ValueInput<Transform>(nameof(original));
             offset   = ValueInput(nameof(offset), Vector3.right);
             count    = ValueInput(nameof(count), 1);
@@ -36,41 +43,26 @@ namespace GeometryNodes
             start = ValueOutput<Vector3>(nameof(start));
             end = ValueOutput<Vector3>(nameof(end));
 
-            Requirement(original, input);
+            base.Definition();
             Assignment(input, parent);
         }
 
-        public override void AfterAdd()
-        {
-            base.AfterAdd();
-            graph.valueConnections.ItemRemoved += OnOriginalDisconnected;
-        }
-
-        public override void BeforeRemove()
-        {
-            graph.valueConnections.ItemRemoved -= OnOriginalDisconnected;
-            base.BeforeRemove();
-        }
-
-        private void OnOriginalDisconnected(IUnitConnection connection)
-            => OnPortDisconnected(connection, original);
-
         public override void Clear()
         {
+            copiesOut.Clear();
             if (parentOut == null)
                 return;
 
-            foreach (Transform child in parentOut)
+            /// Don't iterate over <see cref="copiesOut"/> because a
+            /// downstream node could have moved the copy to another parent
+            /// in the meantime
+            foreach (Transform child in parentOut.ChildrenToRescue())
             {
-                if (!child.GetComponent<Copy>() && !child.GetComponent<Group>())
-                {
-                    child.parent = parentOut.parent;
-                    PositionOverride.Remove(child);
-                }
+                child.parent = parentOut.parent;
+                PositionOverride.Remove(child);
             }
 
             parentOut.SafeDestroy();
-            copiesOut.Clear();
         }
 
         protected override void Execute(Flow flow)
@@ -79,26 +71,34 @@ namespace GeometryNodes
             int vcount  = flow.GetValue<int>(count);
             Transform voriginal = flow.GetValue<Transform>(original);
 
+            flow.SetValue(start, voriginal.localPosition - voffset);
+            flow.SetValue(end  , voriginal.localPosition + voffset * (vcount + 1));
+
             if (copiesOut.Count == 0)
                 copiesOut.Add(voriginal);
 
-            flow.SetValue(start, voriginal.localPosition - voffset);
-            flow.SetValue(end  , voriginal.localPosition + voffset * (vcount + 1));
             if (parentOut == null)
                 parentOut = voriginal.Group(nameof(Array));
 
-            // Destroy surplus copies
+            // Find surplus copies to destroy
             List<Transform> toDestroy = new();
             int childCnt = parentOut.childCount;
+
             for (int i = childCnt - 1; i >= 0 && childCnt - toDestroy.Count > vcount; i--)
             {
                 Transform child = parentOut.GetChild(i);
+
+                // Even the original can have a Copy Component if created by
+                // an upstream node. Then this node has no ownership of it.
                 if (child != voriginal && child.GetComponent<Copy>())
                 {
                     toDestroy.Add(child);
                     copiesOut.Remove(child);
                 }
             }
+
+            // Destroy copies in separate loop to not destroy children while
+            // iterating over parent
             foreach (Transform t in toDestroy)
                 t.SafeDestroy();
 
@@ -112,16 +112,21 @@ namespace GeometryNodes
 
             // Position children
             PositionOverride.Add(voriginal);
-            int? origId = voriginal.TryGetComponent(out Group g) ? g.Id : null;
+            int? origId = voriginal.GroupId();
             int j = 0;
             foreach (Transform child in parentOut)
             {
                 child.localPosition = voffset * j++;
-                if (child.TryGetComponent(out Group gr) && gr.Id != origId)
-                    continue;
 
-                child.localRotation = voriginal.localRotation;
-                child.localScale = voriginal.localScale;
+                // Only rotate and scale when original already was a group
+                // or child and original both aren't one. Otherwise the group
+                // was created by a downstream node handling rotation
+                // and scale with its copies.
+                if (child.GroupId() == origId)
+                {
+                    child.localRotation = voriginal.localRotation;
+                    child.localScale = voriginal.localScale;
+                }
             }
         }
     }

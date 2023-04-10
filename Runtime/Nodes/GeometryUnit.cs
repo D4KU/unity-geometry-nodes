@@ -4,6 +4,9 @@ using Unity.VisualScripting;
 
 namespace GeometryNodes
 {
+    /// <summary>
+    /// Base class for every Geometry Node
+    /// </summary>
     [UnitCategory(GeometryUnit.CATEGORY)]
     public abstract class GeometryUnit : Unit
     {
@@ -13,54 +16,65 @@ namespace GeometryNodes
         [PortLabelHidden, DoNotSerialize] public ControlInput input;
         [PortLabelHidden, DoNotSerialize] public ControlOutput output;
 
+        /// <summary>
+        /// Input ports causing the node to reset when disconnected
+        /// </summary>
+        protected virtual IEnumerable<ValueInput> Required => new ValueInput[0];
+
         protected override void Definition()
         {
             input = ControlInput(nameof(input), WrapExecute);
             output = ControlOutput(nameof(output));
             Succession(input, output);
+
+            foreach (var i in Required)
+                Requirement(i, input);
         }
 
         public override void AfterAdd()
         {
             base.AfterAdd();
-            graph.controlConnections.ItemRemoved += OnInputDisconnected;
+            graph.controlConnections.ItemRemoved += OnControlDisconnected;
+            graph.valueConnections.ItemRemoved += OnValueDisconnected;
         }
 
         public override void BeforeRemove()
         {
             base.BeforeRemove();
-            graph.controlConnections.ItemRemoved -= OnInputDisconnected;
-            Clear();
+            graph.controlConnections.ItemRemoved -= OnControlDisconnected;
+            graph.valueConnections.ItemRemoved -= OnValueDisconnected;
+            input.ClearDownstream();
         }
 
-        private void OnInputDisconnected(IUnitConnection connection)
-            => OnPortDisconnected(connection, input);
-
-        protected void OnAnyPortDisconnected(IUnitConnection connection, IEnumerable<IUnitInputPort> destinations)
+        private void OnControlDisconnected(IUnitConnection connection)
         {
-            if (destinations.Contains(connection.destination))
-            {
-                output.ClearDownstream();
-                Clear();
-            }
+            if (connection.destination == input)
+                input.ClearDownstream();
         }
 
-        protected void OnPortDisconnected(IUnitConnection connection, IUnitInputPort destination)
+        private void OnValueDisconnected(IUnitConnection connection)
         {
-            if (connection.destination == destination)
-            {
-                output.ClearDownstream();
-                Clear();
-            }
+            if (Required.Contains(connection.destination))
+                input.ClearDownstream();
         }
 
+        /// <summary>
+        /// Wrapper so abstract Execute() doesn't have to return output port
+        /// </summary>
         private ControlOutput WrapExecute(Flow flow)
         {
             Execute(flow);
             return output;
         }
 
-        abstract public void Clear();
+        /// <summary>
+        /// Main behaviour of the node
+        /// </summary>
         abstract protected void Execute(Flow flow);
+
+        /// <summary>
+        /// Undo everything done in <see cref="Execute"/>
+        /// </summary>
+        abstract public void Clear();
     }
 }
