@@ -33,7 +33,7 @@ namespace GeometryNodes
 
         /// <summary>
         /// If an override exists next to the given transform, remove it
-        /// and restore the original rotation.
+        /// and restore the original local rotation.
         /// </summary>
         public static void Remove(Transform t)
         {

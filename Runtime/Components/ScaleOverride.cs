@@ -32,7 +32,7 @@ namespace GeometryNodes
 
         /// <summary>
         /// If an override exists next to the given transform, remove it
-        /// and restore the original scale.
+        /// and restore the original local scale.
         /// </summary>
         public static void Remove(Transform t)
         {

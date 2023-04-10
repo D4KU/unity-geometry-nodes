@@ -15,7 +15,7 @@ namespace GeometryNodes
                 nameof(Array.original) => Descriptions.ORIGINAL,
                 nameof(Array.parent) => Descriptions.PARENT,
                 nameof(Array.offset)
-                    => "Distance between each copy in local space of original's parent",
+                    => "Distance between each copy in local space of Original's parent",
                 nameof(Array.count)
                     => "Number of copies to create. 0 still keeps the original.",
                 nameof(Array.copies)

@@ -32,10 +32,13 @@ namespace GeometryNodes
 
         /// <summary>
         /// If an override exists next to the given transform, remove it
-        /// and restore the original position.
+        /// and restore the original local position.
         /// </summary>
         public static void Remove(Transform t)
         {
+            if (t == null)
+                return;
+
             if (t.TryGetComponent(out PositionOverride o))
             {
                 t.localPosition = o.Original;
