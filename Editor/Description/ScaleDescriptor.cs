@@ -12,10 +12,10 @@ namespace GeometryNodes
             base.DefinedPort(port, description);
             description.summary = port.key switch
             {
-                nameof(Position.target) => "Object to scale",
-                nameof(Position.x) => Coordinate('x'),
-                nameof(Position.y) => Coordinate('y'),
-                nameof(Position.z) => Coordinate('z'),
+                nameof(Scale.target) => "Object to scale",
+                nameof(Scale.x) => Coordinate('x'),
+                nameof(Scale.y) => Coordinate('y'),
+                nameof(Scale.z) => Coordinate('z'),
                 _ => string.Empty,
             };
         }

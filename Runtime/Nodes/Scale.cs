@@ -11,6 +11,9 @@ namespace GeometryNodes
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
     public class Scale : TransformUnit
     {
+        /// <summary>
+        /// Objects overridden since the last reset
+        /// </summary>
         private readonly HashSet<Transform> overriden = new();
 
         protected override Vector3 Vector

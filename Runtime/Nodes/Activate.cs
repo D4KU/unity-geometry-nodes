@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace GeometryNodes
 {
+    /// <summary>
+    /// Set active state of an object
+    /// </summary>
     [TypeIcon(typeof(UnityEngine.UI.Toggle))]
     [UnitSubtitle(GeometryUnit.SUBTITLE)]
     public class Activate : GeometryUnit
@@ -11,7 +14,10 @@ namespace GeometryNodes
         [DoNotSerialize] public ValueInput target;
         [DoNotSerialize] public ValueInput active;
 
-        protected Transform targetValue;
+        /// <summary>
+        /// Objects overridden since the last reset
+        /// </summary>
+        private readonly HashSet<Transform> overriden = new();
 
         protected override IEnumerable<ValueInput> Required => new[] { target };
 
@@ -22,13 +28,18 @@ namespace GeometryNodes
             base.Definition();
         }
 
-        public override void Clear() => ActiveOverride.Remove(targetValue);
+        public override void Clear()
+        {
+            foreach (Transform t in overriden)
+                ActiveOverride.Remove(t);
+            overriden.Clear();
+        }
 
         protected override void Execute(Flow flow)
         {
-             targetValue = flow.GetValue<Transform>(target);
-             ActiveOverride.Add(targetValue);
-             targetValue.gameObject.SetActive(flow.GetValue<bool>(active));
+             Transform vtarget = flow.GetValue<Transform>(target);
+             ActiveOverride.Add(vtarget);
+             vtarget.gameObject.SetActive(flow.GetValue<bool>(active));
         }
     }
 }

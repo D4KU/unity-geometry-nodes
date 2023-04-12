@@ -12,10 +12,10 @@ namespace GeometryNodes
             base.DefinedPort(port, description);
             description.summary = port.key switch
             {
-                nameof(Position.target) => "Object to rotate",
-                nameof(Position.x) => Coordinate('x'),
-                nameof(Position.y) => Coordinate('y'),
-                nameof(Position.z) => Coordinate('z'),
+                nameof(Rotation.target) => "Object to rotate",
+                nameof(Rotation.x) => Coordinate('x'),
+                nameof(Rotation.y) => Coordinate('y'),
+                nameof(Rotation.z) => Coordinate('z'),
                 _ => string.Empty,
             };
         }
