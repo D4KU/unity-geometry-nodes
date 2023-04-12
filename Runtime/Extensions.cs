@@ -44,21 +44,9 @@ namespace GeometryNodes
             {
                 T copy = Object.Instantiate(original, parent);
                 copy.AddComponent<Copy>();
-                copy.transform.RemoveOverrides();
                 copy.gameObject.hideFlags = HideFlags.DontSave;
                 return copy;
             }
-
-        /// <summary>
-        /// Remove all transform overrides from a object and restore its
-        /// original transformation
-        /// </summary>
-        public static void RemoveOverrides(this Transform t)
-        {
-            PositionOverride.Remove(t);
-            RotationOverride.Remove(t);
-            ScaleOverride.Remove(t);
-        }
 
         /// <summary>
         /// Get the <see cref="Group"/> ID of the object with the given
