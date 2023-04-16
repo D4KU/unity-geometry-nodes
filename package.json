@@ -2,5 +2,12 @@
   "name": "com.d4ku.geometry-nodes",
   "version": "0.1.0",
   "displayName": "Geometry Nodes",
-  "description": "Build complex objects through Visual Scripting nodes"
+  "description": "Build complex objects through Visual Scripting nodes",
+  "samples": [
+    {
+        "displayName": "Barn",
+        "description": "Construct the barn from the gif in the Readme",
+        "path": "Samples~/Barn"
+    }
+  ]
 }
