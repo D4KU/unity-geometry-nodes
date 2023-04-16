@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace GeometryNodes
 {
     /// <summary>
-    /// Create a common group object for a variable number of child objects
+    /// Group objects to let the next node process them as one unit
     /// </summary>
     [TypeIcon(typeof(ISelectUnit))]
     [UnitSubtitle(GeometryUnit.SUBTITLE)]

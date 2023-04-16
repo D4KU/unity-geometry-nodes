@@ -4,7 +4,7 @@ using UnityEngine;
 namespace GeometryNodes
 {
     /// <summary>
-    /// Rotates an object so that it points its forward axis to a given point
+    /// Rotate an object so that it points its forward axis to a given point
     /// </summary>
     [TypeIcon(typeof(Ray))]
     [UnitSubtitle(GeometryUnit.SUBTITLE)]

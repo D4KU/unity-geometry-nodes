@@ -4,9 +4,12 @@ namespace GeometryNodes
 {
     /// <summary>
     /// Entry point from which to start traversing through Geometry Nodes
-    /// once and input variable changes
+    /// once an input variable changes
     /// </summary>
     [TypeIcon(typeof(GraphInput))]
+    [UnitCategory("Events")]
+    [UnitTitle("Geometry Node Entry")]
+    [UnitShortTitle(nameof(Entry))]
     public class Entry : EventUnit<EmptyEventArgs>
     {
         protected override bool register => true;

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace GeometryNodes
 {
     /// <summary>
-    /// Creates a variable amount of copies from a template object and
+    /// Create a variable amount of copies from a template object and
     /// positions them with a given offset
     /// </summary>
     [TypeIcon(typeof(List<>))]
