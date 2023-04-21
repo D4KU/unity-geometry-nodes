@@ -45,6 +45,9 @@ namespace GeometryNodes
 
             base.Definition();
             Assignment(input, parent);
+            Assignment(input, copies);
+            Assignment(input, start);
+            Assignment(input, end);
         }
 
         public override void Clear()
@@ -103,12 +106,7 @@ namespace GeometryNodes
                 t.SafeDestroy();
 
             // Create newly wanted copies
-            for (int i = parentOut.childCount; i < vcount; i++)
-            {
-                Transform copy = voriginal.Duplicate(parentOut);
-                copy.name += $"({i})";
-                copiesOut.Add(copy);
-            }
+            copiesOut.AddCopies(vcount, voriginal, parentOut);
 
             // Position children
             PositionOverride.Add(voriginal);

@@ -7,7 +7,7 @@ namespace GeometryNodes
     /// <summary>
     /// Base class for every Geometry Node
     /// </summary>
-    [UnitCategory(GeometryUnit.CATEGORY)]
+    [UnitCategory(CATEGORY)]
     public abstract class GeometryUnit : Unit
     {
         public const string SUBTITLE = "Geometry Node";
@@ -43,19 +43,29 @@ namespace GeometryNodes
             base.BeforeRemove();
             graph.controlConnections.ItemRemoved -= OnControlDisconnected;
             graph.valueConnections.ItemRemoved -= OnValueDisconnected;
-            input.ClearDownstream();
+            ClearDownstream();
         }
 
         private void OnControlDisconnected(IUnitConnection connection)
         {
             if (connection.destination == input)
-                input.ClearDownstream();
+                ClearDownstream();
         }
 
         private void OnValueDisconnected(IUnitConnection connection)
         {
             if (Required.Contains(connection.destination))
-                input.ClearDownstream();
+                ClearDownstream();
+        }
+
+        /// Recursively clear nodes linked to this node's output and this
+        /// node itself
+        private void ClearDownstream()
+        {
+            // Don't use input.ClearDownstream() because input might already
+            // have no connection anymore
+            output.ClearDownstream();
+            Clear();
         }
 
         /// <summary>
