@@ -20,12 +20,12 @@ package, containing the following new nodes to build objects procedurally:
 | Scale     | Set the local scale of an object |
 | Look At   | Rotate an object so that it points its forward axis to a given point |
 
-Some nodes sound so simple that you may wonder why you don't just use the
+Some nodes sound so simple that you may wonder why you shouldn't just use the
 nodes built into the *Visual Scripting* package to do something like setting a
 position. The answer is that nodes of this package can revert changes they
 have done, allowing you to tear down parts or the entirety of your creations
 and reconstruct them with different input parameters. This is possible both in
-Edit- and Play Mode, allowing you to quickly iterate.
+Edit and Play Mode, allowing you to iterate quickly.
 
 
 # Installation

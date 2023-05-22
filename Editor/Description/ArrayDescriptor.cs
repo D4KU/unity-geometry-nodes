@@ -19,7 +19,7 @@ namespace GeometryNodes
                 nameof(Array.count)
                     => "Number of copies to create. 0 still keeps the original.",
                 nameof(Array.copies)
-                    => "List of copies created with the original as first entry.",
+                    => "List of copies created with the original as first entry",
                 nameof(Array.start)
                     => "Position at which the -1st copy would be created",
                 nameof(Array.end)
